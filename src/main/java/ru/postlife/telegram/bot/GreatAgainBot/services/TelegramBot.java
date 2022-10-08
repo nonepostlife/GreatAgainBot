@@ -1,5 +1,6 @@
 package ru.postlife.telegram.bot.GreatAgainBot.services;
 
+import com.vdurmont.emoji.EmojiParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.postlife.telegram.bot.GreatAgainBot.configs.BotConfig;
 
@@ -87,16 +90,31 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(long chatId, String firstName) {
-        String answer = String.format("Hi %s nice to meet you", firstName);
+        String answer = EmojiParser.parseToUnicode(String.format("Hi %s, nice to meet you :wave:", firstName));
         sendMessage(chatId, answer);
     }
 
     private void sendMessage(long chatId, String textToSend) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setText(textToSend);
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText(textToSend);
+
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> buttons = new ArrayList<>();
+        KeyboardRow row = new KeyboardRow();
+        row.add(String.valueOf(1));
+        row.add(String.valueOf(2));
+        buttons.add(row);
+        row = new KeyboardRow();
+        row.add("Check my data");
+        row.add("Delete my data");
+        buttons.add(row);
+        replyKeyboardMarkup.setKeyboard(buttons);
+
+        message.setReplyMarkup(replyKeyboardMarkup);
+
         try {
-            execute(sendMessage);
+            execute(message);
         } catch (TelegramApiException e) {
             log.error("exception - " + e.getMessage());
         }
